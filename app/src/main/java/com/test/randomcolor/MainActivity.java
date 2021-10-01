@@ -2,6 +2,7 @@ package com.test.randomcolor;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 
@@ -21,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerViewUtil mRecyclerViewUtil;
     private int START_POS = 18;
-
+    SwipeRefreshLayout swipeRefreshLayout;
     RecyclerView recyclerView;
     MyAdapter myAdapter;
     String color;
@@ -32,17 +35,41 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // setup RefreshLayout
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setProgressViewOffset(true, 50, 100);
+        swipeRefreshLayout.setColorSchemeResources(
+                android.R.color.holo_blue_light,
+                android.R.color.holo_red_light,
+                android.R.color.holo_orange_light
+        );
+        // size
+        swipeRefreshLayout.setSize(SwipeRefreshLayout.LARGE);
+        // 監聽下拉刷新
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                link.clear();
+                addColor();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        myAdapter.notifyDataSetChanged();
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                }, 1000);
+
+            }
+        });
+
+
         //設置RecycleView
         recyclerView = findViewById(R.id.recyclerView);
         myAdapter = new MyAdapter();
         recyclerView.setAdapter(myAdapter);
 
         //設置初始資料
-        for (int i = 0; i < 18; i++) {
-            color = getColor();
-            link.add("https://dummyimage.com/300x300/" + color + "/ffffff&text=" + color);
-        }
-        Log.d(TAG, String.valueOf(link.size()));
+        addColor();
         mRecyclerViewUtil=new RecyclerViewUtil(recyclerView);
         mRecyclerViewUtil.setRecyclerViewLoadMoreListener(new RecyclerViewUtil.RecyclerViewLoadMoreListener() {
             @Override
@@ -54,6 +81,14 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public void addColor(){
+        for (int i = 0; i < 18; i++) {
+            color = getColor();
+            link.add("https://dummyimage.com/300x300/" + color + "/ffffff&text=" + color);
+        }
+        Log.d(TAG, String.valueOf(link.size()));
     }
 
     private void load(int startPos, int count) {
