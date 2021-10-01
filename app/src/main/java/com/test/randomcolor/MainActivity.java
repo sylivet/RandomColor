@@ -23,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "RandomColor";
 
     private RecyclerViewUtil mRecyclerViewUtil;
-    private int START_POS = 18;
     SwipeRefreshLayout swipeRefreshLayout;
     RecyclerView recyclerView;
     MyAdapter myAdapter;
@@ -49,12 +48,12 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                link.clear();
-                addColor();
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        myAdapter.notifyDataSetChanged();
+                        link.clear();
+                        addColor();
+                        myAdapter.notifyItemChanged(link.size()-18);
                         swipeRefreshLayout.setRefreshing(false);
                     }
                 }, 1000);
@@ -76,42 +75,30 @@ public class MainActivity extends AppCompatActivity {
             public void onLoadMore() {
                 Toast.makeText(getApplicationContext(),"已經到底，加載中",Toast.LENGTH_SHORT).show();
                 mRecyclerViewUtil.setLoadMoreEnable(false);
-                load(START_POS,(int)(Math.random()*36)+18);
-
-
+                load();
+                Log.d(TAG, String.valueOf(link.size()));
             }
         });
     }
 
+
     public void addColor(){
-        for (int i = 0; i < 18; i++) {
+        for (int i = 0; i < 30; i++) {
             color = getColor();
             link.add("https://dummyimage.com/300x300/" + color + "/ffffff&text=" + color);
         }
-        Log.d(TAG, String.valueOf(link.size()));
     }
 
-    private void load(int startPos, int count) {
-        if (link.size()+count<=300){
-            for (int i = 0; i < count; i++) {
-                color = getColor();
-                link.add("https://dummyimage.com/300x300/" + color + "/ffffff&text=" + color);
-            }
-            myAdapter.notifyDataSetChanged();
-            Toast.makeText(getApplicationContext(), "加載了" + count + "條資料", Toast.LENGTH_SHORT).show();
+    private void load() {
+        if (link.size()<=270){
+            addColor();
+            myAdapter.notifyItemRangeInserted(link.size()-30,30);
+            Toast.makeText(getApplicationContext(), "加載了" + 30 + "條資料", Toast.LENGTH_SHORT).show();
             mRecyclerViewUtil.setLoadMoreEnable(true);
         }else{
-            for (int i = link.size(); i < 300; i++) {
-                color = getColor();
-                link.add("https://dummyimage.com/300x300/" + color + "/ffffff&text=" + color);
-            }
-            myAdapter.notifyDataSetChanged();
             Toast.makeText(getApplicationContext(), "已無最新資料", Toast.LENGTH_SHORT).show();
             mRecyclerViewUtil.setLoadMoreEnable(false);
         }
-        Log.d(TAG, String.valueOf(link.size()));
-
-        START_POS = startPos + count;
     }
 
 
