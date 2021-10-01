@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         link.clear();
                         addColor();
-                        myAdapter.notifyItemChanged(link.size()-18);
+                        myAdapter.notifyItemRangeChanged(0,30);
                         swipeRefreshLayout.setRefreshing(false);
                     }
                 }, 1000);
@@ -112,6 +112,11 @@ public class MainActivity extends AppCompatActivity {
             int num = (int) (Math.random() * 16);
             str += arr[num];
         }
+
+        int test=(int)(Math.random()*16777216);
+        String hex=Integer.toHexString(test);
+        Log.d(TAG, hex);
+
         return str;
     }
 
